@@ -1,0 +1,2 @@
+# simjac
+Simple JSON Configuration
