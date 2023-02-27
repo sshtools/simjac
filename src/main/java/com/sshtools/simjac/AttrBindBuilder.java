@@ -7,6 +7,22 @@ import java.util.function.Supplier;
 
 public final class AttrBindBuilder<T> {
 
+	public static <T> AttrBindBuilder<T> xobject(Class<T> type, String name, Consumer<T> setter, Supplier<T> getter) {
+		return new AttrBindBuilder<>(type).withName(name).withSet(setter).withGet(getter);
+	}
+	
+	public static <T> AttrBindBuilder<T> xobject(Class<T> type, String name, Supplier<T> getter) {
+		return new AttrBindBuilder<>(type).withName(name).withGet(getter);
+	}
+	
+	public static <T> AttrBindBuilder<T> xobject(Class<T> type, String name, Consumer<T> setter) {
+		return new AttrBindBuilder<>(type).withName(name).withSet(setter);
+	}
+	
+	public static <T> AttrBindBuilder<T> xobject(Class<T> type) {
+		return new AttrBindBuilder<>(type);
+	}
+
 	public static AttrBindBuilder<String> xstring() {
 		return new AttrBindBuilder<>(String.class);
 	}

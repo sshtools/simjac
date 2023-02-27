@@ -59,14 +59,13 @@ public final class ConfigurationStoreImpl implements ConfigurationStore {
 	}
 
 	@Override
-	public void store() { 
+	public void store() {
 		var p = path.resolve(name);
 		checkDir(p.getParent());
 
-
-        var properties = new HashMap<String, Object>(1);
-        properties.put(JsonGenerator.PRETTY_PRINTING, true);
-        var writerFactory = Json.createWriterFactory(properties);
+		var properties = new HashMap<String, Object>(1);
+		properties.put(JsonGenerator.PRETTY_PRINTING, true);
+		var writerFactory = Json.createWriterFactory(properties);
 		try (var out = Files.newBufferedWriter(p.resolveSibling(p.getFileName() + ".json"))) {
 			try (var wrt = writerFactory.createWriter(out)) {
 				var bldr = Json.createObjectBuilder();
@@ -134,7 +133,7 @@ public final class ConfigurationStoreImpl implements ConfigurationStore {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void deserialize(JsonValue jsonValue) {
 		if (jsonValue.getValueType() == ValueType.OBJECT) {
 			var obj = jsonValue.asJsonObject();
@@ -205,7 +204,10 @@ public final class ConfigurationStoreImpl implements ConfigurationStore {
 							((Consumer<Byte>) attrBinding.setter()).accept((byte) obj.getInt(k));
 						} else if (attrBinding.type().equals(Boolean.class)) {
 							((Consumer<Boolean>) attrBinding.setter()).accept(obj.getBoolean(k));
-						} else
+						} else if (Enum.class.isAssignableFrom(attrBinding.type())) {
+							((Consumer<Enum<?>>) attrBinding.setter()).accept(Enum.valueOf((Class<Enum>) attrBinding.type(), obj.getString(k)));
+							;
+						}  else
 							throw new UnsupportedOperationException(
 									MessageFormat.format("Type {0} cannot be deserialized, it is an unsupported type.",
 											attrBinding.type().getName()));
@@ -264,6 +266,8 @@ public final class ConfigurationStoreImpl implements ConfigurationStore {
 					bldr.add(bndEn.getKey(), (Byte) val);
 				} else if (bndEnVal.type().equals(Boolean.class)) {
 					bldr.add(bndEn.getKey(), (Boolean) val);
+				} else if (Enum.class.isAssignableFrom(bndEnVal.type())) {
+					bldr.add(bndEn.getKey(), ((Enum<?>) val).name());
 				} else
 					throw new UnsupportedOperationException(MessageFormat.format(
 							"Type {0} cannot be serialized, it is an unsupported type.", val.getClass().getName()));
