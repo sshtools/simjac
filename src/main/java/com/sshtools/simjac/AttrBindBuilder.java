@@ -1,17 +1,28 @@
 package com.sshtools.simjac;
 
 import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
-public final class AttrBindBuilder<T> {
+public final class AttrBindBuilder<T> extends AbstractBindBuilder<AttrBinding<T>, T, AttrBindBuilder<T>> {
 
 	public static <T> AttrBindBuilder<T> xobject(Class<T> type, String name, Consumer<T> setter, Supplier<T> getter) {
 		return new AttrBindBuilder<>(type).withName(name).withSet(setter).withGet(getter);
 	}
 	
+	public static <P, T> AttrBindBuilder<T> xobject(Class<T> type, String name, Consumer<T> setter, Class<P> parentClass, Function<P, T> getter) {
+		return new AttrBindBuilder<>(type).withName(name).withSet(setter).withGet(getter);
+	}
+	
 	public static <T> AttrBindBuilder<T> xobject(Class<T> type, String name, Supplier<T> getter) {
+		return new AttrBindBuilder<>(type).withName(name).withGet(getter);
+	}
+	
+	public static <P, T> AttrBindBuilder<T> xobject(Class<T> type, String name, Class<P> parentClass, Function<P, T> getter) {
 		return new AttrBindBuilder<>(type).withName(name).withGet(getter);
 	}
 	
@@ -29,6 +40,14 @@ public final class AttrBindBuilder<T> {
 
 	public static AttrBindBuilder<String> xstring(String name, Consumer<String> setter, Supplier<String> getter) {
 		return new AttrBindBuilder<>(String.class).withName(name).withSet(setter).withGet(getter);
+	}
+
+	public static <T> AttrBindBuilder<String> xstring(String name, Consumer<String> setter, Class<T> clazz, Function<T, String> getter) {
+		return new AttrBindBuilder<>(String.class).withName(name).withSet(setter).withGet(getter);
+	}
+
+	public static <T> AttrBindBuilder<String> xstring(String name, Function<T, String> getter) {
+		return new AttrBindBuilder<>(String.class).withName(name).withGet(getter);
 	}
 
 	public static AttrBindBuilder<String> xstring(String name, Supplier<String> getter) {
@@ -55,6 +74,14 @@ public final class AttrBindBuilder<T> {
 		return new AttrBindBuilder<>(Integer.class).withName(name).withGet(getter);
 	}
 
+	public static <T> AttrBindBuilder<Integer> xinteger(String name, Consumer<Integer> setter, Class<T> clazz, Function<T, Integer> getter) {
+		return new AttrBindBuilder<>(Integer.class).withName(name).withSet(setter).withGet(getter);
+	}
+
+	public static <T> AttrBindBuilder<Integer> xinteger(String name, Function<T, Integer> getter) {
+		return new AttrBindBuilder<>(Integer.class).withName(name).withGet(getter);
+	}
+
 	public static AttrBindBuilder<Boolean> xboolean() {
 		return new AttrBindBuilder<>(Boolean.class);
 	}
@@ -68,6 +95,14 @@ public final class AttrBindBuilder<T> {
 	}
 
 	public static AttrBindBuilder<Boolean> xboolean(String name, Supplier<Boolean> getter) {
+		return new AttrBindBuilder<>(Boolean.class).withName(name).withGet(getter);
+	}
+
+	public static <T> AttrBindBuilder<Boolean> xboolean(String name, Consumer<Boolean> setter, Class<T> clazz, Function<T, Boolean> getter) {
+		return new AttrBindBuilder<>(Boolean.class).withName(name).withSet(setter).withGet(getter);
+	}
+
+	public static <T> AttrBindBuilder<Boolean> xboolean(String name, Function<T, Boolean> getter) {
 		return new AttrBindBuilder<>(Boolean.class).withName(name).withGet(getter);
 	}
 
@@ -87,6 +122,14 @@ public final class AttrBindBuilder<T> {
 		return new AttrBindBuilder<>(Long.class).withName(name).withGet(getter);
 	}
 
+	public static <T> AttrBindBuilder<Long> xlong(String name, Consumer<Long> setter, Class<T> clazz, Function<T, Long> getter) {
+		return new AttrBindBuilder<>(Long.class).withName(name).withSet(setter).withGet(getter);
+	}
+
+	public static <T> AttrBindBuilder<Long> xlong(String name, Function<T, Long> getter) {
+		return new AttrBindBuilder<>(Long.class).withName(name).withGet(getter);
+	}
+
 	public static AttrBindBuilder<Short> xshort() {
 		return new AttrBindBuilder<>(Short.class);
 	}
@@ -100,6 +143,14 @@ public final class AttrBindBuilder<T> {
 	}
 
 	public static AttrBindBuilder<Short> xshort(String name, Supplier<Short> getter) {
+		return new AttrBindBuilder<>(Short.class).withName(name).withGet(getter);
+	}
+
+	public static <T> AttrBindBuilder<Short> xshort(String name, Consumer<Short> setter, Class<T> clazz, Function<T, Short> getter) {
+		return new AttrBindBuilder<>(Short.class).withName(name).withSet(setter).withGet(getter);
+	}
+
+	public static <T> AttrBindBuilder<Short> xshort(String name, Function<T, Short> getter) {
 		return new AttrBindBuilder<>(Short.class).withName(name).withGet(getter);
 	}
 
@@ -119,6 +170,14 @@ public final class AttrBindBuilder<T> {
 		return new AttrBindBuilder<>(Double.class).withName(name).withGet(getter);
 	}
 
+	public static <T> AttrBindBuilder<Double> xdouble(String name, Consumer<Double> setter, Class<T> clazz, Function<T, Double> getter) {
+		return new AttrBindBuilder<>(Double.class).withName(name).withSet(setter).withGet(getter);
+	}
+
+	public static <T> AttrBindBuilder<Double> xdouble(String name, Function<T, Double> getter) {
+		return new AttrBindBuilder<>(Double.class).withName(name).withGet(getter);
+	}
+
 	public static AttrBindBuilder<Float> xfloat() {
 		return new AttrBindBuilder<>(Float.class);
 	}
@@ -132,6 +191,14 @@ public final class AttrBindBuilder<T> {
 	}
 
 	public static AttrBindBuilder<Float> xfloat(String name, Supplier<Float> getter) {
+		return new AttrBindBuilder<>(Float.class).withName(name).withGet(getter);
+	}
+
+	public static <T> AttrBindBuilder<Float> xfloat(String name, Consumer<Float> setter, Class<T> clazz, Function<T, Float> getter) {
+		return new AttrBindBuilder<>(Float.class).withName(name).withSet(setter).withGet(getter);
+	}
+
+	public static <T> AttrBindBuilder<Float> xfloat(String name, Function<T, Float> getter) {
 		return new AttrBindBuilder<>(Float.class).withName(name).withGet(getter);
 	}
 
@@ -152,6 +219,14 @@ public final class AttrBindBuilder<T> {
 		return new AttrBindBuilder<>(Character.class).withName(name).withGet(getter);
 	}
 
+	public static <T> AttrBindBuilder<Character> xchar(String name, Consumer<Character> setter, Class<T> clazz, Function<T, Character> getter) {
+		return new AttrBindBuilder<>(Character.class).withName(name).withSet(setter).withGet(getter);
+	}
+
+	public static <T> AttrBindBuilder<Character> xchar(String name, Function<T, Character> getter) {
+		return new AttrBindBuilder<>(Character.class).withName(name).withGet(getter);
+	}
+
 	public static AttrBindBuilder<Byte> xbyte() {
 		return new AttrBindBuilder<>(Byte.class);
 	}
@@ -168,15 +243,31 @@ public final class AttrBindBuilder<T> {
 		return new AttrBindBuilder<>(Byte.class).withName(name).withGet(getter);
 	}
 
-	private Class<T> type;
+	public static <T> AttrBindBuilder<Byte> xbyte(String name, Consumer<Byte> setter, Class<T> clazz, Function<T, Byte> getter) {
+		return new AttrBindBuilder<>(Byte.class).withName(name).withSet(setter).withGet(getter);
+	}
+
+	public static <T> AttrBindBuilder<Byte> xbyte(String name, Function<T, Byte> getter) {
+		return new AttrBindBuilder<>(Byte.class).withName(name).withGet(getter);
+	}
+
 	private Optional<String> name;
 	private Optional<Consumer<T>> setter;
 	private Optional<Supplier<T>> getter;
 	private boolean omitNull = true;
 	private boolean nullBlank = true;
-
+	private Map<String, AttrBinding<?>> bindings = new HashMap<>();
+	private final Class<T> type;
+	
 	private AttrBindBuilder(Class<T> type) {
 		this.type = type;
+	}
+
+	public AttrBindBuilder<T> withBinding(AttrBinding<?>... bindings) {
+		for(var b : bindings) {
+			this.bindings.put(b.name(),  b);
+		}
+		return this;
 	}
 
 	public AttrBindBuilder<T> withoutOmitNull() {
@@ -208,7 +299,12 @@ public final class AttrBindBuilder<T> {
 	}
 
 	public AttrBindBuilder<T> withGet(Supplier<T> getter) {
-		this.getter = Optional.of(getter);
+		return withGet((o) -> getter.get());
+	}
+
+	public AttrBindBuilder<T> withGet(Function<?, T> getter) {
+		// TODO this 'null' is temporary, need to pass down object
+		this.getter = Optional.of(() -> getter.apply(null));
 		return this;
 	}
 
@@ -220,6 +316,7 @@ public final class AttrBindBuilder<T> {
 		var on = this.omitNull;
 		var nb = this.nullBlank;
 		return new AttrBinding<>() {
+			@SuppressWarnings("unchecked")
 			@Override
 			public Supplier<T> getter() {
 				return g.orElseThrow(() -> new IllegalArgumentException(
@@ -251,6 +348,7 @@ public final class AttrBindBuilder<T> {
 			public boolean nullBlank() {
 				return nb;
 			}
+
 
 		};
 	}

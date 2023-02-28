@@ -1,9 +1,11 @@
 package com.sshtools.simjac;
 
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+import javax.json.JsonValue;
 
 public class ConfigurationStoreBuilder {
 
@@ -29,17 +31,28 @@ public class ConfigurationStoreBuilder {
 	Scope scope = defaultScope;
 	Optional<Path> path = Optional.empty();
 	Optional<Path> customRoot = Optional.empty();
+	Optional<Supplier<JsonValue>> serializer = Optional.empty();
+	Optional<Consumer<JsonValue>> deserializer = Optional.empty();
 	Optional<String> name = Optional.empty();
 	String app = defaultApp;
-	Map<String, AttrBinding<?>> bindings = new HashMap<>();
-	boolean failOnMissingBinds = true;
+//	Optional<Binding<?>> binding = Optional.empty();
 	boolean failOnMissingFile = true;
 
 	private ConfigurationStoreBuilder() {
 	}
 
+	public ConfigurationStoreBuilder withDeserializer(Consumer<JsonValue> deserializer) {
+		this.deserializer = Optional.of(deserializer);
+		return this;
+	}
+
+	public ConfigurationStoreBuilder withSerializer(Supplier<JsonValue> serializer) {
+		this.serializer = Optional.of(serializer);
+		return this;
+	}
+
 	public ConfigurationStoreBuilder withName(String name) {
-		this.name =  Optional.of(name);
+		this.name = Optional.of(name);
 		return this;
 	}
 
@@ -53,18 +66,9 @@ public class ConfigurationStoreBuilder {
 	}
 
 	public ConfigurationStoreBuilder withScope(Scope scope) {
-		if(customRoot.isPresent() && scope != Scope.CUSTOM)
+		if (customRoot.isPresent() && scope != Scope.CUSTOM)
 			throw new IllegalArgumentException("A custom root has been set. Scope may not be used.");
 		this.scope = scope;
-		return this;
-	}
-
-	public ConfigurationStoreBuilder withoutFailOnMissingBinds() {
-		return withFailOnMissingBinds(false);
-	}
-
-	public ConfigurationStoreBuilder withFailOnMissingBinds(boolean failOnMissingBinds) {
-		this.failOnMissingBinds = failOnMissingBinds;
 		return this;
 	}
 
@@ -101,13 +105,6 @@ public class ConfigurationStoreBuilder {
 
 	public ConfigurationStoreBuilder withPath(Optional<Path> path) {
 		this.path = path;
-		return this;
-	}
-
-	public <T> ConfigurationStoreBuilder withBinding(AttrBinding<?>... bindings) {
-		for(var b : bindings) {
-			this.bindings.put(b.name(),  b);
-		}
 		return this;
 	}
 
