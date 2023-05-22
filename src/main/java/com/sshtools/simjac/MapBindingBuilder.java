@@ -2,13 +2,14 @@ package com.sshtools.simjac;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class MapBindingBuilder<K, V> extends AbstractBindBuilder<MapBinding<K, V>, Map<K, V>, MapBindingBuilder<K, V>> {
 
-	public static <K, V> MapBindingBuilder<K, V> builder(Class<K> key, Class<K> val) {
+	public static <K, V> MapBindingBuilder<K, V> builder(Class<K> key, Class<V> val) {
 		return new MapBindingBuilder<>();
 	}
 	
@@ -21,33 +22,34 @@ public class MapBindingBuilder<K, V> extends AbstractBindBuilder<MapBinding<K, V
 
 	private Optional<Consumer<Map<K,V>>> setter;
 	private Optional<Supplier<Map<K,V>>> getter;
-	private Optional<Supplier<Map.Entry<K, V>>> construct;
-	private Optional<Function<Map.Entry<K, V>, Binding<Map.Entry<K, V>>>> binding = Optional.empty();
+	private Optional<Function<K, V>> construct;
+	private Optional<BiFunction<K, V, Binding<V>>> binding = Optional.empty();
 	
 	public MapBindingBuilder() {
 	}
 
-	public MapBindingBuilder<K, V> withBinding(Function<Map.Entry<K, V>, Binding<Map.Entry<K, V>>> binding) {
+	public MapBindingBuilder<K, V> withBinding(BiFunction<K, V, Binding<V>> binding) {
 		this.binding = Optional.of(binding);
+		
 		return this;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <B, T> MapBindingBuilder<K, V> withBindingBuilder(Supplier<B> builderSupplier, Function<B, T> constructor, Function<B, Binding<Map.Entry<K, V>>> populator) {
-		var builder = builderSupplier.get();
-		withConstruct(() -> (Map.Entry<K, V>)constructor.apply(builder));
-		return withBinding((obj) -> {
-			populator.apply(builder);
-			return populator.apply(builder);
-		});
-	}
+//	@SuppressWarnings("unchecked")
+//	public <B, T> MapBindingBuilder<K, V> withBindingBuilder(Supplier<B> builderSupplier, Function<B, T> constructor, Function<B, Binding<E>> populator) {
+//		var builder = builderSupplier.get();
+//		withConstruct(() -> (E)constructor.apply(builder));
+//		return withBinding((obj) -> {
+//			populator.apply(builder);
+//			return populator.apply(builder);
+//		});
+//	}
 
 	public MapBindingBuilder<K, V> withSet(Consumer<Map<K, V>> setter) {
 		this.setter = Optional.of(setter);
 		return this;
 	}
 
-	public MapBindingBuilder<K, V> withConstruct(Supplier<Map.Entry<K, V>> getter) {
+	public MapBindingBuilder<K, V> withConstruct(Function<K, V> getter) {
 		this.construct = Optional.of(getter);
 		return this;
 	}
@@ -77,12 +79,12 @@ public class MapBindingBuilder<K, V> extends AbstractBindBuilder<MapBinding<K, V
 			}
 
 			@Override
-			public Function<Map.Entry<K, V>, Binding<Map.Entry<K, V>>> binding() {
+			public BiFunction<K, V, Binding<V>> binding() {
 				return b.orElseThrow(() -> new IllegalArgumentException("No bound binding."));
 			}
 
 			@Override
-			public Supplier<Map.Entry<K, V>> construct() {
+			public Function<K, V> construct() {
 				return c.orElseThrow(() -> new IllegalArgumentException("No bound constructor."));
 			}
 		};

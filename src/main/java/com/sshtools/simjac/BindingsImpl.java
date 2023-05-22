@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -39,20 +41,38 @@ public class BindingsImpl implements Bindings {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void deserialize(Binding<?> binding, JsonValue jsonValue) {
 		if (jsonValue.getValueType() == ValueType.OBJECT) {
-			if(!(binding instanceof ObjectBinding)) {
-				throw new IllegalArgumentException(MessageFormat.format("Binding mismatch. Expected an {0}, but got a {1}.", ObjectBinding.class.getName(), binding.getClass().getName()));
-			}
-			var objBinding = (ObjectBinding<Object>)binding;
-			jsonValue.asJsonObject().forEach((k,v) -> {
-				var attrBinding = objBinding.bindings().get(k);
-				if (attrBinding == null) {
-					if (failOnMissingBinds) {
-						throw new IllegalArgumentException(MessageFormat.format("Attribute {0} has no binding.", k));
+			if(binding instanceof ObjectBinding) {
+				var objBinding = (ObjectBinding<Object>)binding;
+				jsonValue.asJsonObject().forEach((k,v) -> {
+					var attrBinding = objBinding.bindings().get(k);
+					if (attrBinding == null) {
+						if (failOnMissingBinds) {
+							throw new IllegalArgumentException(MessageFormat.format("Attribute {0} has no binding.", k));
+						}
+					} else {
+						deserialize(attrBinding, v);
 					}
-				} else {
-					deserialize(attrBinding, v);
-				}
-			});
+				});
+			}
+			else if(binding instanceof MapBinding) {
+				var mapBinding = (MapBinding<Object,Object>)binding;
+				var mapMap = new LinkedHashMap<Object,Object>();
+				jsonValue.asJsonObject().forEach((k,v) -> {
+					var object = mapBinding.construct().apply(k);
+					var attrBinding = mapBinding.binding().apply(k, object);
+					if (attrBinding == null) {
+						if (failOnMissingBinds) {
+							throw new IllegalArgumentException(MessageFormat.format("Attribute {0} has no binding.", k));
+						}
+					} else {
+						deserialize((Binding<?>) attrBinding, v);
+						mapMap.put(k, object);
+					}
+				});
+				mapBinding.setter().accept(mapMap);
+			}
+			else
+				throw new IllegalArgumentException(MessageFormat.format("Binding mismatch. Expected an {0}, but got a {1}.", ObjectBinding.class.getName(), binding.getClass().getName()));
 		}
 		else if (jsonValue.getValueType() == ValueType.ARRAY) {
 			if(!(binding instanceof ArrayBinding)) {
@@ -148,7 +168,7 @@ public class BindingsImpl implements Bindings {
 	}
 	
 	private JsonValue serializeValue(Binding<?> b) {
-		if(b instanceof ArrayBinding || b instanceof ObjectBinding) {
+		if(b instanceof ArrayBinding || b instanceof ObjectBinding || b instanceof MapBinding){
 			return serializeStructure(b);
 		}
 		else {
@@ -199,6 +219,11 @@ public class BindingsImpl implements Bindings {
 			serializeArray((ArrayBinding<?>) binding, bldr);
 			return bldr.build();
 		}
+		else if(binding instanceof MapBinding) {
+			var bldr = Json.createObjectBuilder();
+			serializeMap((MapBinding<?, ?>)binding, bldr);
+			return bldr.build();
+		}
 		else {
 			var bldr = Json.createObjectBuilder();
 			serializeObject((ObjectBinding<?>)binding, bldr);
@@ -207,12 +232,19 @@ public class BindingsImpl implements Bindings {
 	}
 
 	private <E> void serializeArray(ArrayBinding<E> array, JsonArrayBuilder bldr) {
+		Function<E, Binding<E>> bnd = array.binding();
 		for(var object : array.getter().get()) {
-			Function<E, Binding<E>> bnd = array.binding();
 			bldr.add(serializeStructure(bnd.apply(object)));
 		}
 		
 	}
+	private <K, V> void serializeMap(MapBinding<K, V> map,  JsonObjectBuilder bldr) {
+		BiFunction<K, V, Binding<V>> bnd = map.binding();
+		for(var entry : map.getter().get().entrySet()) {
+			bldr.add(entry.getKey().toString(), serializeValue(bnd.apply(entry.getKey(), entry.getValue())));
+		}
+	}
+	
 	private void serializeObject(ObjectBinding<?> object,  JsonObjectBuilder bldr) {
 		object.bindings().forEach((k,v) -> bldr.add(k, serializeValue(v)));
 	}
