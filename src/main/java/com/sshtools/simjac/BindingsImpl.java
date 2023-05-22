@@ -3,6 +3,7 @@ package com.sshtools.simjac;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -58,11 +59,14 @@ public class BindingsImpl implements Bindings {
 				throw new IllegalArgumentException(MessageFormat.format("Binding mismatch. Expected an {0}, but got a {1}.", ArrayBinding.class.getName(), binding.getClass().getName()));
 			}
 			var arrBinding = (ArrayBinding<Object>)binding;
+			var arrayList = new ArrayList<>();
 			jsonValue.asJsonArray().forEach(v -> {
 				var object = arrBinding.construct().get();
 				var bnd = arrBinding.binding().apply(object);
 				deserialize(bnd, v);
+				arrayList.add(object);
 			});
+			arrBinding.setter().accept(arrayList);
 		}
 		else if (jsonValue.getValueType() == ValueType.FALSE) {
 			((AttrBinding<Boolean>)binding).setter().accept(false);
@@ -72,29 +76,34 @@ public class BindingsImpl implements Bindings {
 			
 		}
 		else if (jsonValue.getValueType() == ValueType.NULL) {
-			if(((AttrBinding<Object>)binding).nullBlank()) {
+			if(((AttrBinding<Object>)binding).nullBlank()) {	
 				var attrBinding = (AttrBinding<?>)binding;
 				if (attrBinding.type().equals(Double.class)) {
-					((Consumer<Double>) attrBinding.setter()).accept(((JsonNumber)jsonValue).doubleValue());
+					((Consumer<Double>) attrBinding.setter()).accept(0d);
 				} else if (attrBinding.type().equals(Float.class)) {
-					((Consumer<Float>) attrBinding.setter()).accept((float) ((JsonNumber)jsonValue).doubleValue());
+					((Consumer<Float>) attrBinding.setter()).accept(0f);
 				} else if (attrBinding.type().equals(BigInteger.class)) {
 					((Consumer<BigInteger>) attrBinding.setter())
-							.accept(((JsonNumber)jsonValue).bigIntegerValue());
+							.accept(BigInteger.valueOf(0));
 				} else if (attrBinding.type().equals(BigDecimal.class)) {
 					((Consumer<BigDecimal>) attrBinding.setter())
-							.accept(((JsonNumber)jsonValue).bigDecimalValue());
+							.accept(BigDecimal.valueOf(0));
 				} else if (attrBinding.type().equals(Long.class)) {
-					((Consumer<Long>) attrBinding.setter()).accept(((JsonNumber)jsonValue).longValue());
+					((Consumer<Long>) attrBinding.setter()).accept(0l);
 				} else if (attrBinding.type().equals(Integer.class)) {
-					((Consumer<Integer>) attrBinding.setter()).accept((int)((JsonNumber)jsonValue).longValue());
+					((Consumer<Integer>) attrBinding.setter()).accept(0);
 				} else if (attrBinding.type().equals(Short.class)) {
-					((Consumer<Short>) attrBinding.setter()).accept((short)((JsonNumber)jsonValue).longValue());
+					((Consumer<Short>) attrBinding.setter()).accept((short)0);
 				} else if (attrBinding.type().equals(Character.class)) {
-					((Consumer<Character>) attrBinding.setter()).accept((char)((JsonNumber)jsonValue).longValue());
+					((Consumer<Character>) attrBinding.setter()).accept((char)0);
 				} else if (attrBinding.type().equals(Byte.class)) {
-					((Consumer<Byte>) attrBinding.setter()).accept((byte)((JsonNumber)jsonValue).longValue());
-				}	
+					((Consumer<Byte>) attrBinding.setter()).accept((byte)0);
+				} else if (attrBinding.type().equals(String.class))  {
+					((AttrBinding<Object>)binding).setter().accept("");
+					
+				} else {
+					((AttrBinding<Object>)binding).setter().accept(null);
+				}
 			}
 			else {
 				((AttrBinding<Object>)binding).setter().accept(null);
@@ -103,30 +112,25 @@ public class BindingsImpl implements Bindings {
 		else if (jsonValue.getValueType() == ValueType.NUMBER) {
 			var attrBinding = (AttrBinding<?>)binding;
 			if (attrBinding.type().equals(Double.class)) {
-				((Consumer<Double>) attrBinding.setter()).accept(0d);
+				((Consumer<Double>) attrBinding.setter()).accept(((JsonNumber)jsonValue).doubleValue());
 			} else if (attrBinding.type().equals(Float.class)) {
-				((Consumer<Float>) attrBinding.setter()).accept(0f);
+				((Consumer<Float>) attrBinding.setter()).accept((float) ((JsonNumber)jsonValue).doubleValue());
 			} else if (attrBinding.type().equals(BigInteger.class)) {
 				((Consumer<BigInteger>) attrBinding.setter())
-						.accept(BigInteger.valueOf(0));
+						.accept(((JsonNumber)jsonValue).bigIntegerValue());
 			} else if (attrBinding.type().equals(BigDecimal.class)) {
 				((Consumer<BigDecimal>) attrBinding.setter())
-						.accept(BigDecimal.valueOf(0));
+						.accept(((JsonNumber)jsonValue).bigDecimalValue());
 			} else if (attrBinding.type().equals(Long.class)) {
-				((Consumer<Long>) attrBinding.setter()).accept(0l);
+				((Consumer<Long>) attrBinding.setter()).accept(((JsonNumber)jsonValue).longValue());
 			} else if (attrBinding.type().equals(Integer.class)) {
-				((Consumer<Integer>) attrBinding.setter()).accept(0);
+				((Consumer<Integer>) attrBinding.setter()).accept((int)((JsonNumber)jsonValue).longValue());
 			} else if (attrBinding.type().equals(Short.class)) {
-				((Consumer<Short>) attrBinding.setter()).accept((short)0);
+				((Consumer<Short>) attrBinding.setter()).accept((short)((JsonNumber)jsonValue).longValue());
 			} else if (attrBinding.type().equals(Character.class)) {
-				((Consumer<Character>) attrBinding.setter()).accept((char)0);
+				((Consumer<Character>) attrBinding.setter()).accept((char)((JsonNumber)jsonValue).longValue());
 			} else if (attrBinding.type().equals(Byte.class)) {
-				((Consumer<Byte>) attrBinding.setter()).accept((byte)0);
-			} else if (attrBinding.type().equals(String.class))  {
-				((AttrBinding<Object>)binding).setter().accept("");
-				
-			} else {
-				((AttrBinding<Object>)binding).setter().accept(null);
+				((Consumer<Byte>) attrBinding.setter()).accept((byte)((JsonNumber)jsonValue).longValue());
 			}
 		}
 		else if (jsonValue.getValueType() == ValueType.STRING) {
@@ -152,9 +156,9 @@ public class BindingsImpl implements Bindings {
 			var type = bind.type();
 			var val = bind.getter().get();
 			if (type.equals(String.class)) {
-				if (val.equals("")) {
+				if (val == null || val.equals("")) {
 					if (bind.nullBlank()) {
-						return Json.createValue((String) val);
+						return Json.createValue((String) "");
 					} else {
 						return null;
 					}

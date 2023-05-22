@@ -316,7 +316,6 @@ public final class AttrBindBuilder<T> extends AbstractBindBuilder<AttrBinding<T>
 		var on = this.omitNull;
 		var nb = this.nullBlank;
 		return new AttrBinding<>() {
-			@SuppressWarnings("unchecked")
 			@Override
 			public Supplier<T> getter() {
 				return g.orElseThrow(() -> new IllegalArgumentException(
