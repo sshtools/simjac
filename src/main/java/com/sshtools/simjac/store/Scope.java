@@ -13,20 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.sshtools.simjac;
+package com.sshtools.simjac.store;
 
-import java.util.Collection;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
-public interface ArrayBinding<E> extends Binding<Collection<E>> {
-
-	Supplier<E> construct();
-
-	Supplier<Collection<E>> getter();
-
-	Consumer<Collection<E>> setter();
-
-	Function<E, Binding<E>> binding();
+public enum Scope {
+	USER, GLOBAL, CUSTOM
 }

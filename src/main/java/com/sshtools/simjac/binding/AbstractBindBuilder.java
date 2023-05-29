@@ -13,13 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.sshtools.simjac;
+package com.sshtools.simjac.binding;
 
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+public abstract class AbstractBindBuilder<B extends Binding<?>, T, Z extends AbstractBindBuilder<B, T, Z>> {
 
-import javax.json.JsonValue;
-
-public interface Bindings extends Supplier<JsonValue>, Consumer<JsonValue> {
-
+	public abstract B build();
 }

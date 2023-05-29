@@ -15,5 +15,6 @@
  */
 module com.sshtools.simjac {
 	requires transitive java.json; 
-	exports com.sshtools.simjac;
+	exports com.sshtools.simjac.binding;
+	exports com.sshtools.simjac.store;
 }

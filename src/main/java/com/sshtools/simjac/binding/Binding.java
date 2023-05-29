@@ -13,16 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.sshtools.simjac;
+package com.sshtools.simjac.binding;
 
-import java.io.Closeable;
-
-public interface ConfigurationStore extends Closeable {
-
-	void store();
-
-	void retrieve();
-
-    void close();
-
+public interface Binding<T> {
 }

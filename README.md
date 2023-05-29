@@ -21,8 +21,8 @@ to model the binding.
 
 ```java
 package test;
-import static com.sshtools.simjac.AttrBindBuilder.*;
-import com.sshtools.simjac.ConfigurationStoreBuilder;
+import static com.sshtools.simjac.binding.AttrBindBuilder.*;
+import com.sshtools.simjac.store.ConfigurationStoreBuilder;
 
 public class Test {
 	

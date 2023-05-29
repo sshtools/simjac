@@ -13,10 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.sshtools.simjac;
+package com.sshtools.simjac.binding;
 
-import java.util.Map;
+import java.util.Collection;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
-public interface ObjectBinding<T> extends Binding<T> {
-	Map<String, AttrBinding<?>> bindings();
+public interface ArrayBinding<E> extends Binding<Collection<E>> {
+
+	Supplier<E> construct();
+
+	Supplier<Collection<E>> getter();
+
+	Consumer<Collection<E>> setter();
+
+	Function<E, Binding<E>> binding();
 }

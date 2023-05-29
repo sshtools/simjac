@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.sshtools.simjac;
+package com.sshtools.simjac.binding;
 
 import java.text.MessageFormat;
 import java.util.HashMap;
@@ -76,7 +76,7 @@ public final class AttrBindBuilder<T> extends AbstractBindBuilder<AttrBinding<T>
 		return new AttrBindBuilder<>(String.class).withName(name).withSet(setter).withGet(getter);
 	}
 
-	public static <T> AttrBindBuilder<String> xstring(String name, Function<T, String> getter) {
+	public static <T> AttrBindBuilder<String> xstringWith(String name, Function<T, String> getter) {
 		return new AttrBindBuilder<>(String.class).withName(name).withGet(getter);
 	}
 
@@ -109,7 +109,7 @@ public final class AttrBindBuilder<T> extends AbstractBindBuilder<AttrBinding<T>
 		return new AttrBindBuilder<>(Integer.class).withName(name).withSet(setter).withGet(getter);
 	}
 
-	public static <T> AttrBindBuilder<Integer> xinteger(String name, Function<T, Integer> getter) {
+	public static <T> AttrBindBuilder<Integer> xintegerWith(String name, Function<T, Integer> getter) {
 		return new AttrBindBuilder<>(Integer.class).withName(name).withGet(getter);
 	}
 
@@ -134,7 +134,7 @@ public final class AttrBindBuilder<T> extends AbstractBindBuilder<AttrBinding<T>
 		return new AttrBindBuilder<>(Boolean.class).withName(name).withSet(setter).withGet(getter);
 	}
 
-	public static <T> AttrBindBuilder<Boolean> xboolean(String name, Function<T, Boolean> getter) {
+	public static <T> AttrBindBuilder<Boolean> xbooleanWith(String name, Function<T, Boolean> getter) {
 		return new AttrBindBuilder<>(Boolean.class).withName(name).withGet(getter);
 	}
 
@@ -159,7 +159,7 @@ public final class AttrBindBuilder<T> extends AbstractBindBuilder<AttrBinding<T>
 		return new AttrBindBuilder<>(Long.class).withName(name).withSet(setter).withGet(getter);
 	}
 
-	public static <T> AttrBindBuilder<Long> xlong(String name, Function<T, Long> getter) {
+	public static <T> AttrBindBuilder<Long> xlongWith(String name, Function<T, Long> getter) {
 		return new AttrBindBuilder<>(Long.class).withName(name).withGet(getter);
 	}
 
@@ -184,7 +184,7 @@ public final class AttrBindBuilder<T> extends AbstractBindBuilder<AttrBinding<T>
 		return new AttrBindBuilder<>(Short.class).withName(name).withSet(setter).withGet(getter);
 	}
 
-	public static <T> AttrBindBuilder<Short> xshort(String name, Function<T, Short> getter) {
+	public static <T> AttrBindBuilder<Short> xshortWith(String name, Function<T, Short> getter) {
 		return new AttrBindBuilder<>(Short.class).withName(name).withGet(getter);
 	}
 
@@ -209,7 +209,7 @@ public final class AttrBindBuilder<T> extends AbstractBindBuilder<AttrBinding<T>
 		return new AttrBindBuilder<>(Double.class).withName(name).withSet(setter).withGet(getter);
 	}
 
-	public static <T> AttrBindBuilder<Double> xdouble(String name, Function<T, Double> getter) {
+	public static <T> AttrBindBuilder<Double> xdoubleWith(String name, Function<T, Double> getter) {
 		return new AttrBindBuilder<>(Double.class).withName(name).withGet(getter);
 	}
 
@@ -234,7 +234,7 @@ public final class AttrBindBuilder<T> extends AbstractBindBuilder<AttrBinding<T>
 		return new AttrBindBuilder<>(Float.class).withName(name).withSet(setter).withGet(getter);
 	}
 
-	public static <T> AttrBindBuilder<Float> xfloat(String name, Function<T, Float> getter) {
+	public static <T> AttrBindBuilder<Float> xfloatWith(String name, Function<T, Float> getter) {
 		return new AttrBindBuilder<>(Float.class).withName(name).withGet(getter);
 	}
 
@@ -260,7 +260,7 @@ public final class AttrBindBuilder<T> extends AbstractBindBuilder<AttrBinding<T>
 		return new AttrBindBuilder<>(Character.class).withName(name).withSet(setter).withGet(getter);
 	}
 
-	public static <T> AttrBindBuilder<Character> xchar(String name, Function<T, Character> getter) {
+	public static <T> AttrBindBuilder<Character> xcharWith(String name, Function<T, Character> getter) {
 		return new AttrBindBuilder<>(Character.class).withName(name).withGet(getter);
 	}
 
@@ -285,7 +285,7 @@ public final class AttrBindBuilder<T> extends AbstractBindBuilder<AttrBinding<T>
 		return new AttrBindBuilder<>(Byte.class).withName(name).withSet(setter).withGet(getter);
 	}
 
-	public static <T> AttrBindBuilder<Byte> xbyte(String name, Function<T, Byte> getter) {
+	public static <T> AttrBindBuilder<Byte> xbyteWith(String name, Function<T, Byte> getter) {
 		return new AttrBindBuilder<>(Byte.class).withName(name).withGet(getter);
 	}
 

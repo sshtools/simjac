@@ -13,7 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.sshtools.simjac;
+package com.sshtools.simjac.binding;
 
-public interface Binding<T> {
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+public interface AttrBinding<T> extends Binding<T> {
+
+	Class<T> type();
+
+	String name();
+
+	Supplier<T> getter();
+
+	Consumer<T> setter();
+
+	boolean omitNull();
+
+	boolean nullBlank();
 }

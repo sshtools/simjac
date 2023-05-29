@@ -13,8 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.sshtools.simjac;
+package com.sshtools.simjac.binding;
 
-public enum Scope {
-	USER, GLOBAL, CUSTOM
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+import javax.json.JsonValue;
+
+public interface Bindings extends Supplier<JsonValue>, Consumer<JsonValue> {
+
 }

@@ -15,15 +15,20 @@
  */
 package com.sshtools.simjac;
 
-import static com.sshtools.simjac.AttrBindBuilder.xboolean;
-import static com.sshtools.simjac.AttrBindBuilder.xbyte;
-import static com.sshtools.simjac.AttrBindBuilder.xchar;
-import static com.sshtools.simjac.AttrBindBuilder.xdouble;
-import static com.sshtools.simjac.AttrBindBuilder.xfloat;
-import static com.sshtools.simjac.AttrBindBuilder.xinteger;
-import static com.sshtools.simjac.AttrBindBuilder.xlong;
-import static com.sshtools.simjac.AttrBindBuilder.xshort;
-import static com.sshtools.simjac.AttrBindBuilder.xstring;
+import static com.sshtools.simjac.binding.AttrBindBuilder.xboolean;
+import static com.sshtools.simjac.binding.AttrBindBuilder.xbyte;
+import static com.sshtools.simjac.binding.AttrBindBuilder.xchar;
+import static com.sshtools.simjac.binding.AttrBindBuilder.xdouble;
+import static com.sshtools.simjac.binding.AttrBindBuilder.xfloat;
+import static com.sshtools.simjac.binding.AttrBindBuilder.xinteger;
+import static com.sshtools.simjac.binding.AttrBindBuilder.xlong;
+import static com.sshtools.simjac.binding.AttrBindBuilder.xshort;
+import static com.sshtools.simjac.binding.AttrBindBuilder.xstring;
+
+import com.sshtools.simjac.binding.ArrayBindingBuilder;
+import com.sshtools.simjac.binding.BindingsBuilder;
+import com.sshtools.simjac.binding.ObjectBindingBuilder;
+import com.sshtools.simjac.store.ConfigurationStoreBuilder;
 
 import java.util.ArrayList;
 
