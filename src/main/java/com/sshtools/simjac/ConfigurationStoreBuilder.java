@@ -1,3 +1,18 @@
+/**
+ * Copyright © 2023 JAdaptive Limited (support@jadaptive.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.sshtools.simjac;
 
 import java.nio.file.Path;
@@ -7,10 +22,23 @@ import java.util.function.Supplier;
 
 import javax.json.JsonValue;
 
-public class ConfigurationStoreBuilder {
+public final class ConfigurationStoreBuilder {
 
 	private static String defaultApp = ConfigurationStore.class.getName();
 	private static Scope defaultScope = Scope.USER;
+
+	private Scope scope = defaultScope;
+	private Optional<Path> path = Optional.empty();
+	private Optional<Path> customRoot = Optional.empty();
+	private Optional<Supplier<JsonValue>> serializer = Optional.empty();
+	private Optional<Consumer<JsonValue>> deserializer = Optional.empty();
+	private Optional<String> name = Optional.empty();
+	private String app = defaultApp;
+//	Optional<Binding<?>> binding = Optional.empty();
+	private boolean failOnMissingFile = true;
+
+	private ConfigurationStoreBuilder() {
+	}
 
 	public static ConfigurationStoreBuilder builder() {
 		return new ConfigurationStoreBuilder();
@@ -26,19 +54,6 @@ public class ConfigurationStoreBuilder {
 
 	public static void setDefaultScope(Scope defaultScope) {
 		ConfigurationStoreBuilder.defaultScope = defaultScope;
-	}
-
-	Scope scope = defaultScope;
-	Optional<Path> path = Optional.empty();
-	Optional<Path> customRoot = Optional.empty();
-	Optional<Supplier<JsonValue>> serializer = Optional.empty();
-	Optional<Consumer<JsonValue>> deserializer = Optional.empty();
-	Optional<String> name = Optional.empty();
-	String app = defaultApp;
-//	Optional<Binding<?>> binding = Optional.empty();
-	boolean failOnMissingFile = true;
-
-	private ConfigurationStoreBuilder() {
 	}
 
 	public ConfigurationStoreBuilder withDeserializer(Consumer<JsonValue> deserializer) {
@@ -66,8 +81,9 @@ public class ConfigurationStoreBuilder {
 	}
 
 	public ConfigurationStoreBuilder withScope(Scope scope) {
-		if (customRoot.isPresent() && scope != Scope.CUSTOM)
+		if (customRoot.isPresent() && scope != Scope.CUSTOM) {
 			throw new IllegalArgumentException("A custom root has been set. Scope may not be used.");
+		}
 		this.scope = scope;
 		return this;
 	}
@@ -110,5 +126,37 @@ public class ConfigurationStoreBuilder {
 
 	public ConfigurationStore build() {
 		return new ConfigurationStoreImpl(this);
+	}
+
+	Scope getScope() {
+		return scope;
+	}
+
+	Optional<Path> getPath() {
+		return path;
+	}
+
+	Optional<Path> getCustomRoot() {
+		return customRoot;
+	}
+
+	Optional<Supplier<JsonValue>> getSerializer() {
+		return serializer;
+	}
+
+	Optional<Consumer<JsonValue>> getDeserializer() {
+		return deserializer;
+	}
+
+	Optional<String> getName() {
+		return name;
+	}
+
+	String getApp() {
+		return app;
+	}
+
+	boolean isFailOnMissingFile() {
+		return failOnMissingFile;
 	}
 }

@@ -1,3 +1,18 @@
+/**
+ * Copyright © 2023 JAdaptive Limited (support@jadaptive.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.sshtools.simjac;
 
 import java.math.BigDecimal;
@@ -24,8 +39,8 @@ public class BindingsImpl implements Bindings {
 	private final Binding<?> binding;
 
 	public BindingsImpl(BindingsBuilder builder) {
-		this.failOnMissingBinds = builder.failOnMissingBinds;
-		this.binding = builder.binding.orElseThrow(() -> new IllegalStateException("No binding."));
+		this.failOnMissingBinds = builder.isFailOnMissingBinds();
+		this.binding = builder.getBinding().orElseThrow(() -> new IllegalStateException("No binding."));
 	}
 
 	@Override
@@ -41,28 +56,29 @@ public class BindingsImpl implements Bindings {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void deserialize(Binding<?> binding, JsonValue jsonValue) {
 		if (jsonValue.getValueType() == ValueType.OBJECT) {
-			if(binding instanceof ObjectBinding) {
-				var objBinding = (ObjectBinding<Object>)binding;
-				jsonValue.asJsonObject().forEach((k,v) -> {
+			if (binding instanceof ObjectBinding) {
+				var objBinding = (ObjectBinding<Object>) binding;
+				jsonValue.asJsonObject().forEach((k, v) -> {
 					var attrBinding = objBinding.bindings().get(k);
 					if (attrBinding == null) {
 						if (failOnMissingBinds) {
-							throw new IllegalArgumentException(MessageFormat.format("Attribute {0} has no binding.", k));
+							throw new IllegalArgumentException(
+									MessageFormat.format("Attribute {0} has no binding.", k));
 						}
 					} else {
 						deserialize(attrBinding, v);
 					}
 				});
-			}
-			else if(binding instanceof MapBinding) {
-				var mapBinding = (MapBinding<Object,Object>)binding;
-				var mapMap = new LinkedHashMap<Object,Object>();
-				jsonValue.asJsonObject().forEach((k,v) -> {
+			} else if (binding instanceof MapBinding) {
+				var mapBinding = (MapBinding<Object, Object>) binding;
+				var mapMap = new LinkedHashMap<Object, Object>();
+				jsonValue.asJsonObject().forEach((k, v) -> {
 					var object = mapBinding.construct().apply(k);
 					var attrBinding = mapBinding.binding().apply(k, object);
 					if (attrBinding == null) {
 						if (failOnMissingBinds) {
-							throw new IllegalArgumentException(MessageFormat.format("Attribute {0} has no binding.", k));
+							throw new IllegalArgumentException(
+									MessageFormat.format("Attribute {0} has no binding.", k));
 						}
 					} else {
 						deserialize((Binding<?>) attrBinding, v);
@@ -70,15 +86,18 @@ public class BindingsImpl implements Bindings {
 					}
 				});
 				mapBinding.setter().accept(mapMap);
+			} else {
+				throw new IllegalArgumentException(
+						MessageFormat.format("Binding mismatch. Expected an {0}, but got a {1}.",
+								ObjectBinding.class.getName(), binding.getClass().getName()));
 			}
-			else
-				throw new IllegalArgumentException(MessageFormat.format("Binding mismatch. Expected an {0}, but got a {1}.", ObjectBinding.class.getName(), binding.getClass().getName()));
-		}
-		else if (jsonValue.getValueType() == ValueType.ARRAY) {
-			if(!(binding instanceof ArrayBinding)) {
-				throw new IllegalArgumentException(MessageFormat.format("Binding mismatch. Expected an {0}, but got a {1}.", ArrayBinding.class.getName(), binding.getClass().getName()));
+		} else if (jsonValue.getValueType() == ValueType.ARRAY) {
+			if (!(binding instanceof ArrayBinding)) {
+				throw new IllegalArgumentException(
+						MessageFormat.format("Binding mismatch. Expected an {0}, but got a {1}.",
+								ArrayBinding.class.getName(), binding.getClass().getName()));
 			}
-			var arrBinding = (ArrayBinding<Object>)binding;
+			var arrBinding = (ArrayBinding<Object>) binding;
 			var arrayList = new ArrayList<>();
 			jsonValue.asJsonArray().forEach(v -> {
 				var object = arrBinding.construct().get();
@@ -87,92 +106,81 @@ public class BindingsImpl implements Bindings {
 				arrayList.add(object);
 			});
 			arrBinding.setter().accept(arrayList);
-		}
-		else if (jsonValue.getValueType() == ValueType.FALSE) {
-			((AttrBinding<Boolean>)binding).setter().accept(false);
-		}
-		else if (jsonValue.getValueType() == ValueType.TRUE) {
-			((AttrBinding<Boolean>)binding).setter().accept(true);
-			
-		}
-		else if (jsonValue.getValueType() == ValueType.NULL) {
-			if(((AttrBinding<Object>)binding).nullBlank()) {	
-				var attrBinding = (AttrBinding<?>)binding;
+		} else if (jsonValue.getValueType() == ValueType.FALSE) {
+			((AttrBinding<Boolean>) binding).setter().accept(false);
+		} else if (jsonValue.getValueType() == ValueType.TRUE) {
+			((AttrBinding<Boolean>) binding).setter().accept(true);
+
+		} else if (jsonValue.getValueType() == ValueType.NULL) {
+			if (((AttrBinding<Object>) binding).nullBlank()) {
+				var attrBinding = (AttrBinding<?>) binding;
 				if (attrBinding.type().equals(Double.class)) {
 					((Consumer<Double>) attrBinding.setter()).accept(0d);
 				} else if (attrBinding.type().equals(Float.class)) {
 					((Consumer<Float>) attrBinding.setter()).accept(0f);
 				} else if (attrBinding.type().equals(BigInteger.class)) {
-					((Consumer<BigInteger>) attrBinding.setter())
-							.accept(BigInteger.valueOf(0));
+					((Consumer<BigInteger>) attrBinding.setter()).accept(BigInteger.valueOf(0));
 				} else if (attrBinding.type().equals(BigDecimal.class)) {
-					((Consumer<BigDecimal>) attrBinding.setter())
-							.accept(BigDecimal.valueOf(0));
+					((Consumer<BigDecimal>) attrBinding.setter()).accept(BigDecimal.valueOf(0));
 				} else if (attrBinding.type().equals(Long.class)) {
-					((Consumer<Long>) attrBinding.setter()).accept(0l);
+					((Consumer<Long>) attrBinding.setter()).accept(0L);
 				} else if (attrBinding.type().equals(Integer.class)) {
 					((Consumer<Integer>) attrBinding.setter()).accept(0);
 				} else if (attrBinding.type().equals(Short.class)) {
-					((Consumer<Short>) attrBinding.setter()).accept((short)0);
+					((Consumer<Short>) attrBinding.setter()).accept((short) 0);
 				} else if (attrBinding.type().equals(Character.class)) {
-					((Consumer<Character>) attrBinding.setter()).accept((char)0);
+					((Consumer<Character>) attrBinding.setter()).accept((char) 0);
 				} else if (attrBinding.type().equals(Byte.class)) {
-					((Consumer<Byte>) attrBinding.setter()).accept((byte)0);
-				} else if (attrBinding.type().equals(String.class))  {
-					((AttrBinding<Object>)binding).setter().accept("");
-					
+					((Consumer<Byte>) attrBinding.setter()).accept((byte) 0);
+				} else if (attrBinding.type().equals(String.class)) {
+					((AttrBinding<Object>) binding).setter().accept("");
+
 				} else {
-					((AttrBinding<Object>)binding).setter().accept(null);
+					((AttrBinding<Object>) binding).setter().accept(null);
 				}
+			} else {
+				((AttrBinding<Object>) binding).setter().accept(null);
 			}
-			else {
-				((AttrBinding<Object>)binding).setter().accept(null);
-			}
-		}
-		else if (jsonValue.getValueType() == ValueType.NUMBER) {
-			var attrBinding = (AttrBinding<?>)binding;
+		} else if (jsonValue.getValueType() == ValueType.NUMBER) {
+			var attrBinding = (AttrBinding<?>) binding;
 			if (attrBinding.type().equals(Double.class)) {
-				((Consumer<Double>) attrBinding.setter()).accept(((JsonNumber)jsonValue).doubleValue());
+				((Consumer<Double>) attrBinding.setter()).accept(((JsonNumber) jsonValue).doubleValue());
 			} else if (attrBinding.type().equals(Float.class)) {
-				((Consumer<Float>) attrBinding.setter()).accept((float) ((JsonNumber)jsonValue).doubleValue());
+				((Consumer<Float>) attrBinding.setter()).accept((float) ((JsonNumber) jsonValue).doubleValue());
 			} else if (attrBinding.type().equals(BigInteger.class)) {
-				((Consumer<BigInteger>) attrBinding.setter())
-						.accept(((JsonNumber)jsonValue).bigIntegerValue());
+				((Consumer<BigInteger>) attrBinding.setter()).accept(((JsonNumber) jsonValue).bigIntegerValue());
 			} else if (attrBinding.type().equals(BigDecimal.class)) {
-				((Consumer<BigDecimal>) attrBinding.setter())
-						.accept(((JsonNumber)jsonValue).bigDecimalValue());
+				((Consumer<BigDecimal>) attrBinding.setter()).accept(((JsonNumber) jsonValue).bigDecimalValue());
 			} else if (attrBinding.type().equals(Long.class)) {
-				((Consumer<Long>) attrBinding.setter()).accept(((JsonNumber)jsonValue).longValue());
+				((Consumer<Long>) attrBinding.setter()).accept(((JsonNumber) jsonValue).longValue());
 			} else if (attrBinding.type().equals(Integer.class)) {
-				((Consumer<Integer>) attrBinding.setter()).accept((int)((JsonNumber)jsonValue).longValue());
+				((Consumer<Integer>) attrBinding.setter()).accept((int) ((JsonNumber) jsonValue).longValue());
 			} else if (attrBinding.type().equals(Short.class)) {
-				((Consumer<Short>) attrBinding.setter()).accept((short)((JsonNumber)jsonValue).longValue());
+				((Consumer<Short>) attrBinding.setter()).accept((short) ((JsonNumber) jsonValue).longValue());
 			} else if (attrBinding.type().equals(Character.class)) {
-				((Consumer<Character>) attrBinding.setter()).accept((char)((JsonNumber)jsonValue).longValue());
+				((Consumer<Character>) attrBinding.setter()).accept((char) ((JsonNumber) jsonValue).longValue());
 			} else if (attrBinding.type().equals(Byte.class)) {
-				((Consumer<Byte>) attrBinding.setter()).accept((byte)((JsonNumber)jsonValue).longValue());
+				((Consumer<Byte>) attrBinding.setter()).accept((byte) ((JsonNumber) jsonValue).longValue());
 			}
-		}
-		else if (jsonValue.getValueType() == ValueType.STRING) {
-			Class<?> etype = ((AttrBinding<Object>)binding).type();
-			if(Enum.class.isAssignableFrom(etype)) {
-				((AttrBinding<Enum>)binding).setter().accept(Enum.valueOf((Class<Enum>)etype, ((JsonString)jsonValue).getString()));
+		} else if (jsonValue.getValueType() == ValueType.STRING) {
+			Class<?> etype = ((AttrBinding<Object>) binding).type();
+			if (Enum.class.isAssignableFrom(etype)) {
+				((AttrBinding<Enum>) binding).setter()
+						.accept(Enum.valueOf((Class<Enum>) etype, ((JsonString) jsonValue).getString()));
+			} else {
+				((AttrBinding<String>) binding).setter().accept(((JsonString) jsonValue).getString());
 			}
-			else {
-				((AttrBinding<String>)binding).setter().accept(((JsonString)jsonValue).getString());
-			}	
-		}
-		else
+		} else {
 			throw new UnsupportedOperationException();
-		
-	}
-	
-	private JsonValue serializeValue(Binding<?> b) {
-		if(b instanceof ArrayBinding || b instanceof ObjectBinding || b instanceof MapBinding){
-			return serializeStructure(b);
 		}
-		else {
-			var bind = (AttrBinding<?>)b;
+
+	}
+
+	private JsonValue serializeValue(Binding<?> b) {
+		if (b instanceof ArrayBinding || b instanceof ObjectBinding || b instanceof MapBinding) {
+			return serializeStructure(b);
+		} else {
+			var bind = (AttrBinding<?>) b;
 			var type = bind.type();
 			var val = bind.getter().get();
 			if (type.equals(String.class)) {
@@ -204,7 +212,7 @@ public class BindingsImpl implements Bindings {
 			} else if (bind.type().equals(Byte.class)) {
 				return Json.createValue((Byte) val);
 			} else if (bind.type().equals(Boolean.class)) {
-				return  (Boolean) val ? JsonValue.TRUE : JsonValue.FALSE;
+				return (Boolean) val ? JsonValue.TRUE : JsonValue.FALSE;
 			} else if (Enum.class.isAssignableFrom(bind.type())) {
 				return Json.createValue(((Enum<?>) val).name());
 			} else {
@@ -212,41 +220,40 @@ public class BindingsImpl implements Bindings {
 			}
 		}
 	}
-	
+
 	private JsonStructure serializeStructure(Binding<?> binding) {
-		if(binding instanceof ArrayBinding) {
+		if (binding instanceof ArrayBinding) {
 			var bldr = Json.createArrayBuilder();
 			serializeArray((ArrayBinding<?>) binding, bldr);
 			return bldr.build();
-		}
-		else if(binding instanceof MapBinding) {
+		} else if (binding instanceof MapBinding) {
 			var bldr = Json.createObjectBuilder();
-			serializeMap((MapBinding<?, ?>)binding, bldr);
+			serializeMap((MapBinding<?, ?>) binding, bldr);
 			return bldr.build();
-		}
-		else {
+		} else {
 			var bldr = Json.createObjectBuilder();
-			serializeObject((ObjectBinding<?>)binding, bldr);
+			serializeObject((ObjectBinding<?>) binding, bldr);
 			return bldr.build();
 		}
 	}
 
 	private <E> void serializeArray(ArrayBinding<E> array, JsonArrayBuilder bldr) {
 		Function<E, Binding<E>> bnd = array.binding();
-		for(var object : array.getter().get()) {
+		for (var object : array.getter().get()) {
 			bldr.add(serializeStructure(bnd.apply(object)));
 		}
-		
+
 	}
-	private <K, V> void serializeMap(MapBinding<K, V> map,  JsonObjectBuilder bldr) {
+
+	private <K, V> void serializeMap(MapBinding<K, V> map, JsonObjectBuilder bldr) {
 		BiFunction<K, V, Binding<V>> bnd = map.binding();
-		for(var entry : map.getter().get().entrySet()) {
+		for (var entry : map.getter().get().entrySet()) {
 			bldr.add(entry.getKey().toString(), serializeValue(bnd.apply(entry.getKey(), entry.getValue())));
 		}
 	}
-	
-	private void serializeObject(ObjectBinding<?> object,  JsonObjectBuilder bldr) {
-		object.bindings().forEach((k,v) -> bldr.add(k, serializeValue(v)));
+
+	private void serializeObject(ObjectBinding<?> object, JsonObjectBuilder bldr) {
+		object.bindings().forEach((k, v) -> bldr.add(k, serializeValue(v)));
 	}
 
 }

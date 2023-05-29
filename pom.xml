@@ -1,4 +1,23 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<!--
+
+    Copyright © 2023 JAdaptive Limited (support@jadaptive.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.sshtools</groupId>
 	<artifactId>simjac</artifactId>
@@ -9,6 +28,7 @@
 		<maven.compiler.source>17</maven.compiler.source>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<pmd.version>6.54.0</pmd.version>
 	</properties>
 	<developers>
 		<developer>
@@ -23,8 +43,10 @@
 	<inceptionYear>2023</inceptionYear>
 	<url>https://github.com/sshtools/simjac</url>
 	<description>
-		Simple framework to load JSON configuration files from standard locations,
-		and bind the structure to plain old java objects without using reflection.
+		Simple framework to load JSON configuration files from standard
+		locations,
+		and bind the structure to plain old java objects without using
+		reflection.
 	</description>
 	<licenses>
 		<license>
@@ -55,7 +77,21 @@
 		</dependency>
 	</dependencies>
 	<build>
-		<plugins></plugins>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>baag.default</id>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<phase>test-compile</phase>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
 		<pluginManagement>
 			<plugins>
 				<plugin>
@@ -169,9 +205,102 @@
 						<autoReleaseAfterClose>true</autoReleaseAfterClose>
 					</configuration>
 				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-pmd-plugin</artifactId>
+					<version>3.20.0</version>
+					<dependencies>
+						<dependency>
+							<groupId>net.sourceforge.pmd</groupId>
+							<artifactId>pmd-core</artifactId>
+							<version>${pmd.version}</version>
+						</dependency>
+						<dependency>
+							<groupId>net.sourceforge.pmd</groupId>
+							<artifactId>pmd-java</artifactId>
+							<version>${pmd.version}</version>
+						</dependency>
+						<dependency>
+							<groupId>net.sourceforge.pmd</groupId>
+							<artifactId>pmd-javascript</artifactId>
+							<version>${pmd.version}</version>
+						</dependency>
+						<dependency>
+							<groupId>net.sourceforge.pmd</groupId>
+							<artifactId>pmd-jsp</artifactId>
+							<version>${pmd.version}</version>
+						</dependency>
+					</dependencies>
+					<configuration>
+						<skip>false</skip>
+						<failOnViolation>true</failOnViolation>
+						<printFailingErrors>true</printFailingErrors>
+						<includeTests>true</includeTests>
+						<failurePriority>4</failurePriority>
+						<!-- minimum number of tokens that need to be duplicated
+						before it causes a violation: -->
+						<minimumTokens>100</minimumTokens>
+						<rulesets>
+							<ruleset>src/plugins/pmd_rules.xml</ruleset>
+						</rulesets>
+					</configuration>
+				</plugin>
+
+				<plugin>
+					<!-- Documentation:
+					http://maven.apache.org/plugins/maven-checkstyle-plugin/ -->
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-checkstyle-plugin</artifactId>
+					<version>3.2.1</version>
+					<configuration>
+						<skip>false</skip>
+						<failOnViolation>true</failOnViolation>
+						<configLocation>src/plugins/checkstyle_rules.xml</configLocation>
+						<excludes>*.jpg,*.jpeg,*.gif,*.png,*.db,*.csv</excludes>
+						<consoleOutput>true</consoleOutput>
+						<includeTestSourceDirectory>true</includeTestSourceDirectory>
+						<logViolationsToConsole>true</logViolationsToConsole>
+						<violationSeverity>warning</violationSeverity>
+					</configuration>
+					<dependencies>
+						<dependency>
+							<groupId>com.puppycrawl.tools</groupId>
+							<artifactId>checkstyle</artifactId>
+							<version>10.7.0</version>
+						</dependency>
+					</dependencies>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
+
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<reportSets>
+					<reportSet>
+						<id>non-aggregate</id>
+						<reports>
+							<report>javadoc</report>
+						</reports>
+					</reportSet>
+					<reportSet>
+						<id>aggregate</id>
+						<reports>
+							<report>aggregate</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-pmd-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</reporting>
+
 	<profiles>
 		<profile>
 			<id>release-sign-artifacts</id>

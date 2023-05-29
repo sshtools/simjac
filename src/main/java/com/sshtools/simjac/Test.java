@@ -1,3 +1,18 @@
+/**
+ * Copyright © 2023 JAdaptive Limited (support@jadaptive.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.sshtools.simjac;
 
 import static com.sshtools.simjac.AttrBindBuilder.xboolean;
@@ -12,9 +27,59 @@ import static com.sshtools.simjac.AttrBindBuilder.xstring;
 
 import java.util.ArrayList;
 
-public class Test {
-	
-	interface ITest{
+public final class Test {
+
+	private Test() {
+	}
+
+	public static void main(String[] args) {
+
+		var o1 = new TestObject();
+		o1.name = "Name 1";
+		o1.value = 123;
+		o1.selected = true;
+
+		var o2 = new TestObject();
+		o2.name = "Name 2";
+		o1.value = 546;
+		o1.selected = false;
+
+		var l = new ArrayList<ITest>();
+
+		l.add(o1);
+		l.add(o2);
+		System.out.println(l);
+
+		var bindBuild = BindingsBuilder.builder().withoutFailOnMissingBinds()
+				.withBinding(ArrayBindingBuilder.builder(ITest.class, l).withConstruct(() -> new TestObject())
+						.withBinding((t) -> ObjectBindingBuilder.builder(ITest.class)
+								.withBinding(xstring("name", t::setName, t::getName).build(),
+										xinteger("value", t::setValue, t::getValue).build(),
+										xboolean("selected", t::setSelected, t::isSelected).build(),
+										xshort("size", t::setSize, t::getSize).build(),
+										xbyte("flag", t::setFlag, t::getFlag).build(),
+										xlong("time", t::setTime, t::getTime).build(),
+										xdouble("ratio", t::setRatio, t::getRatio).build(),
+										xfloat("factor", t::setFactor, t::getFactor).build(),
+										xchar("marker", t::setMarker, t::getMarker).build())
+								.build())
+						.build());
+		var bind = bindBuild.build();
+
+		var storeBuild = ConfigurationStoreBuilder.builder().withName("configuration").withApp("SimjacTest")
+				.withSerializer(bind).withDeserializer(bind);
+
+		var store = storeBuild.build();
+
+		store.store();
+
+		// or
+		l.clear();
+		store.retrieve();
+		System.out.println(l);
+	}
+
+	interface ITest {
 		String getName();
 
 		boolean isSelected();
@@ -51,7 +116,7 @@ public class Test {
 
 		short getSize();
 	}
-	
+
 	static class TestObject implements ITest {
 		private String name;
 		private int value;
@@ -62,7 +127,7 @@ public class Test {
 		private double ratio;
 		private float factor;
 		private char marker = '*';
-		
+
 		@Override
 		public byte getFlag() {
 			return flag;
@@ -159,58 +224,5 @@ public class Test {
 					+ ", flag=" + flag + ", time=" + time + ", ratio=" + ratio + ", factor=" + factor + ", marker="
 					+ marker + "]";
 		}
-	}
-	
-	public static void main(String[] args) {
-		 
-		var o1 = new TestObject();
-		o1.name = "Name 1";
-		o1.value = 123;
-		o1.selected = true;
-		 
-		var o2 = new TestObject();
-		o2.name = "Name 2";
-		o1.value = 546;
-		o1.selected = false;
-		
-		var l = new ArrayList<ITest>();
-		
-		l.add(o1);
-		l.add(o2);
-		System.out.println(l);
-		
-		var bindBuild = BindingsBuilder.builder().
-				withoutFailOnMissingBinds().
-				withBinding(ArrayBindingBuilder.builder(ITest.class, l).
-						withConstruct(() -> new TestObject()).
-						withBinding((t) -> ObjectBindingBuilder.builder(ITest.class).
-								withBinding(
-										xstring("name", t::setName, t::getName).build(),
-										xinteger("value", t::setValue, t::getValue).build(),
-										xboolean("selected", t::setSelected, t::isSelected).build(),
-										xshort("size", t::setSize, t::getSize).build(),
-										xbyte("flag", t::setFlag, t::getFlag).build(),
-										xlong("time", t::setTime, t::getTime).build(),
-										xdouble("ratio", t::setRatio, t::getRatio).build(),
-										xfloat("factor", t::setFactor, t::getFactor).build(),
-										xchar("marker", t::setMarker, t::getMarker).build()
-										).build()).
-						build());
-		var bind = bindBuild.build();
-		
-		var storeBuild = ConfigurationStoreBuilder.builder().
-				withName("configuration").
-				withApp("SimjacTest").
-				withSerializer(bind).
-				withDeserializer(bind);
-		
-		var store = storeBuild.build();
-
-		store.store();
-		
-		// or
-		l.clear();
-		store.retrieve();
-		System.out.println(l);
 	}
 }

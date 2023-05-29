@@ -1,3 +1,18 @@
+/**
+ * Copyright © 2023 JAdaptive Limited (support@jadaptive.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.sshtools.simjac;
 
 import java.io.FileNotFoundException;
@@ -25,15 +40,16 @@ public final class ConfigurationStoreImpl implements ConfigurationStore {
 
 	ConfigurationStoreImpl(ConfigurationStoreBuilder builder) {
 
-		var path = calcRootForScopeAppAndOs(builder.scope, builder.app, builder.customRoot);
-		if (builder.path.isPresent())
-			path = path.resolve(builder.path.get());
+		var path = calcRootForScopeAppAndOs(builder.getScope(), builder.getApp(), builder.getCustomRoot());
+		if (builder.getPath().isPresent()) {
+			path = path.resolve(builder.getPath().get());
+		}
 
 		this.path = path;
-		this.failOnMissingFile = builder.failOnMissingFile;
-		this.name = builder.name.orElseThrow(() -> new IllegalStateException("Name must be set."));
-		this.serializer = builder.serializer;
-		this.deserializer = builder.deserializer;
+		this.failOnMissingFile = builder.isFailOnMissingFile();
+		this.name = builder.getName().orElseThrow(() -> new IllegalStateException("Name must be set."));
+		this.serializer = builder.getSerializer();
+		this.deserializer = builder.getDeserializer();
 	}
 
 	@Override
@@ -49,8 +65,9 @@ public final class ConfigurationStoreImpl implements ConfigurationStore {
 			} catch (IOException ioe) {
 				throw new UncheckedIOException(ioe);
 			}
-		} else if (failOnMissingFile)
+		} else if (failOnMissingFile) {
 			throw new UncheckedIOException(new FileNotFoundException(MessageFormat.format("No file {0}", f)));
+		}
 	}
 
 	@Override
@@ -70,9 +87,10 @@ public final class ConfigurationStoreImpl implements ConfigurationStore {
 	}
 
 	private Path calcRootForOs(Scope scope, Optional<Path> customRoot) {
-		if (scope == Scope.CUSTOM)
+		if (scope == Scope.CUSTOM) {
 			return customRoot.orElseThrow(() -> new IllegalArgumentException(
 					MessageFormat.format("Scope is {0}, but no custom root set.", scope)));
+		}
 
 		var os = System.getProperty("os.name", "unknown").toLowerCase();
 		if (os.contains("linux")) {
