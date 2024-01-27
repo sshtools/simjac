@@ -23,19 +23,19 @@ import java.util.function.Supplier;
 import javax.json.JsonValue;
 
 public final class ConfigurationStoreBuilder {
-
 	private static String defaultApp = ConfigurationStore.class.getName();
-	private static Scope defaultScope = Scope.USER;
 
-	private Scope scope = defaultScope;
-	private Optional<Path> path = Optional.empty();
-	private Optional<Path> customRoot = Optional.empty();
-	private Optional<Supplier<JsonValue>> serializer = Optional.empty();
-	private Optional<Consumer<JsonValue>> deserializer = Optional.empty();
-	private Optional<String> name = Optional.empty();
+	private static Scope defaultScope = Scope.USER;
 	private String app = defaultApp;
-//	Optional<Binding<?>> binding = Optional.empty();
+	private Optional<Path> customRoot = Optional.empty();
+	private Optional<Consumer<JsonValue>> deserializer = Optional.empty();
+	// Optional<Binding<?>> binding = Optional.empty();
 	private boolean failOnMissingFile = true;
+	private boolean failOnParsingError = true;
+	private Optional<String> name = Optional.empty();
+	private Optional<Path> path = Optional.empty();
+	private Scope scope = defaultScope;
+	private Optional<Supplier<JsonValue>> serializer = Optional.empty();
 
 	private ConfigurationStoreBuilder() {
 	}
@@ -56,13 +56,45 @@ public final class ConfigurationStoreBuilder {
 		ConfigurationStoreBuilder.defaultScope = defaultScope;
 	}
 
+	public ConfigurationStore build() {
+		return new ConfigurationStoreImpl(this);
+	}
+
+	public ConfigurationStoreBuilder withApp(Class<?> app) {
+		return withApp(app.getName());
+	}
+
+	public ConfigurationStoreBuilder withApp(String app) {
+		this.app = app;
+		return this;
+	}
+
+	public ConfigurationStoreBuilder withCustomRoot(Optional<Path> customRoot) {
+		this.customRoot = customRoot;
+		this.scope = Scope.CUSTOM;
+		return this;
+	}
+
+	public ConfigurationStoreBuilder withCustomRoot(Path customRoot) {
+		return withCustomRoot(Optional.of(customRoot));
+	}
+
+	public ConfigurationStoreBuilder withCustomRoot(String customRoot) {
+		return withPath(Path.of(customRoot));
+	}
+
 	public ConfigurationStoreBuilder withDeserializer(Consumer<JsonValue> deserializer) {
 		this.deserializer = Optional.of(deserializer);
 		return this;
 	}
 
-	public ConfigurationStoreBuilder withSerializer(Supplier<JsonValue> serializer) {
-		this.serializer = Optional.of(serializer);
+	public ConfigurationStoreBuilder withFailOnMissingFile(boolean failOnMissingFile) {
+		this.failOnMissingFile = failOnMissingFile;
+		return this;
+	}
+
+	public ConfigurationStoreBuilder withFailOnParsingError(boolean failOnParsingError) {
+		this.failOnParsingError = failOnParsingError;
 		return this;
 	}
 
@@ -71,13 +103,25 @@ public final class ConfigurationStoreBuilder {
 		return this;
 	}
 
-	public ConfigurationStoreBuilder withApp(String app) {
-		this.app = app;
+	public ConfigurationStoreBuilder withoutFailOnMissingFile() {
+		return withFailOnMissingFile(false);
+	}
+
+	public ConfigurationStoreBuilder withoutFailOnParsingError() {
+		return withFailOnParsingError(false);
+	}
+
+	public ConfigurationStoreBuilder withPath(Optional<Path> path) {
+		this.path = path;
 		return this;
 	}
 
-	public ConfigurationStoreBuilder withApp(Class<?> app) {
-		return withApp(app.getName());
+	public ConfigurationStoreBuilder withPath(Path path) {
+		return withPath(Optional.of(path));
+	}
+
+	public ConfigurationStoreBuilder withPath(String path) {
+		return withPath(Path.of(path));
 	}
 
 	public ConfigurationStoreBuilder withScope(Scope scope) {
@@ -88,60 +132,21 @@ public final class ConfigurationStoreBuilder {
 		return this;
 	}
 
-	public ConfigurationStoreBuilder withoutFailOnMissingFile() {
-		return withFailOnMissingFile(false);
-	}
-
-	public ConfigurationStoreBuilder withFailOnMissingFile(boolean failOnMissingFile) {
-		this.failOnMissingFile = failOnMissingFile;
+	public ConfigurationStoreBuilder withSerializer(Supplier<JsonValue> serializer) {
+		this.serializer = Optional.of(serializer);
 		return this;
 	}
 
-	public ConfigurationStoreBuilder withPath(String path) {
-		return withPath(Path.of(path));
+	public ConfigurationStoreBuilder withSerializerDeserializer(SerDeser serDeser) {
+		return withSerializer(serDeser).withDeserializer(serDeser);
 	}
 
-	public ConfigurationStoreBuilder withPath(Path path) {
-		return withPath(Optional.of(path));
-	}
-
-	public ConfigurationStoreBuilder withCustomRoot(String customRoot) {
-		return withPath(Path.of(customRoot));
-	}
-
-	public ConfigurationStoreBuilder withCustomRoot(Path customRoot) {
-		return withCustomRoot(Optional.of(customRoot));
-	}
-
-	public ConfigurationStoreBuilder withCustomRoot(Optional<Path> customRoot) {
-		this.customRoot = customRoot;
-		this.scope = Scope.CUSTOM;
-		return this;
-	}
-
-	public ConfigurationStoreBuilder withPath(Optional<Path> path) {
-		this.path = path;
-		return this;
-	}
-
-	public ConfigurationStore build() {
-		return new ConfigurationStoreImpl(this);
-	}
-
-	Scope getScope() {
-		return scope;
-	}
-
-	Optional<Path> getPath() {
-		return path;
+	String getApp() {
+		return app;
 	}
 
 	Optional<Path> getCustomRoot() {
 		return customRoot;
-	}
-
-	Optional<Supplier<JsonValue>> getSerializer() {
-		return serializer;
 	}
 
 	Optional<Consumer<JsonValue>> getDeserializer() {
@@ -152,11 +157,27 @@ public final class ConfigurationStoreBuilder {
 		return name;
 	}
 
-	String getApp() {
-		return app;
+	Optional<Path> getPath() {
+		return path;
+	}
+
+	Scope getScope() {
+		return scope;
+	}
+
+	Optional<Supplier<JsonValue>> getSerializer() {
+		return serializer;
 	}
 
 	boolean isFailOnMissingFile() {
 		return failOnMissingFile;
+	}
+
+	boolean isFailOnParsingError() {
+		return failOnParsingError;
+	}
+
+	public interface SerDeser extends Supplier<JsonValue>, Consumer<JsonValue> {
+
 	}
 }

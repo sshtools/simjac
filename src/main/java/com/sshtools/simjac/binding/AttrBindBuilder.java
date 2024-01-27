@@ -16,6 +16,7 @@
 package com.sshtools.simjac.binding;
 
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -35,32 +36,6 @@ public final class AttrBindBuilder<T> extends AbstractBindBuilder<AttrBinding<T>
 
 	private AttrBindBuilder(Class<T> type) {
 		this.type = type;
-	}
-
-	public static <T> AttrBindBuilder<T> xobject(Class<T> type, String name, Consumer<T> setter, Supplier<T> getter) {
-		return new AttrBindBuilder<>(type).withName(name).withSet(setter).withGet(getter);
-	}
-
-	public static <P, T> AttrBindBuilder<T> xobject(Class<T> type, String name, Consumer<T> setter,
-			Class<P> parentClass, Function<P, T> getter) {
-		return new AttrBindBuilder<>(type).withName(name).withSet(setter).withGet(getter);
-	}
-
-	public static <T> AttrBindBuilder<T> xobject(Class<T> type, String name, Supplier<T> getter) {
-		return new AttrBindBuilder<>(type).withName(name).withGet(getter);
-	}
-
-	public static <P, T> AttrBindBuilder<T> xobject(Class<T> type, String name, Class<P> parentClass,
-			Function<P, T> getter) {
-		return new AttrBindBuilder<>(type).withName(name).withGet(getter);
-	}
-
-	public static <T> AttrBindBuilder<T> xobject(Class<T> type, String name, Consumer<T> setter) {
-		return new AttrBindBuilder<>(type).withName(name).withSet(setter);
-	}
-
-	public static <T> AttrBindBuilder<T> xobject(Class<T> type) {
-		return new AttrBindBuilder<>(type);
 	}
 
 	public static AttrBindBuilder<String> xstring() {
@@ -86,6 +61,73 @@ public final class AttrBindBuilder<T> extends AbstractBindBuilder<AttrBinding<T>
 
 	public static AttrBindBuilder<String> xstring(String name, Consumer<String> setter) {
 		return new AttrBindBuilder<>(String.class).withName(name).withSet(setter);
+	}
+
+	@SuppressWarnings("rawtypes")
+	public static AttrBindBuilder<ArrayBinding> xarray() {
+		return new AttrBindBuilder<ArrayBinding>(ArrayBinding.class);
+	}
+
+	public static <T> AttrBindBuilder<ArrayBinding> xarray(String name, Class<T> itemType, Collection<T> items) {
+		return xarray(name, (arr) -> {
+			items.clear();
+			items.addAll((Collection<T>) arr.getter().get());
+		}, () -> ArrayBindingBuilder.builder(itemType, items).build());
+	}
+
+	@SuppressWarnings("rawtypes")
+	public static AttrBindBuilder<ArrayBinding> xarray(String name, Supplier<ArrayBinding> getter) {
+		return new AttrBindBuilder<ArrayBinding>(ArrayBinding.class).withName(name).withGet(getter);
+	}
+
+	@SuppressWarnings("rawtypes")
+	public static AttrBindBuilder<ArrayBinding> xarray(String name, Consumer<ArrayBinding> setter, Supplier<ArrayBinding> getter) {
+		return new AttrBindBuilder<ArrayBinding>(ArrayBinding.class).withName(name).withSet(setter).withGet(getter);
+	}
+
+	@SuppressWarnings("rawtypes")
+	public static AttrBindBuilder<ArrayBinding> xarray(String name, Consumer<ArrayBinding> setter) {
+		return new AttrBindBuilder<ArrayBinding>(ArrayBinding.class).withName(name).withSet(setter);
+	}
+
+	@SuppressWarnings("rawtypes")
+	public static AttrBindBuilder<ObjectBinding> xobject() {
+		return new AttrBindBuilder<ObjectBinding>(ObjectBinding.class);
+	}
+
+	@SuppressWarnings("rawtypes")
+	public static AttrBindBuilder<ObjectBinding> xobject(String name, Supplier<ObjectBinding> getter) {
+		return new AttrBindBuilder<ObjectBinding>(ObjectBinding.class).withName(name).withGet(getter);
+	}
+
+	@SuppressWarnings("rawtypes")
+	public static AttrBindBuilder<ObjectBinding> xobject(String name, Consumer<ObjectBinding> setter, Supplier<ObjectBinding> getter) {
+		return new AttrBindBuilder<ObjectBinding>(ObjectBinding.class).withName(name).withSet(setter).withGet(getter);
+	}
+
+	@SuppressWarnings("rawtypes")
+	public static AttrBindBuilder<ObjectBinding> xobject(String name, Consumer<ObjectBinding> setter) {
+		return new AttrBindBuilder<ObjectBinding>(ObjectBinding.class).withName(name).withSet(setter);
+	}
+
+	@SuppressWarnings("rawtypes")
+	public static AttrBindBuilder<MapBinding> xmap() {
+		return new AttrBindBuilder<MapBinding>(MapBinding.class);
+	}
+
+	@SuppressWarnings("rawtypes")
+	public static AttrBindBuilder<MapBinding> xmap(String name, Supplier<MapBinding> getter) {
+		return new AttrBindBuilder<MapBinding>(MapBinding.class).withName(name).withGet(getter);
+	}
+
+	@SuppressWarnings("rawtypes")
+	public static AttrBindBuilder<MapBinding> xmap(String name, Consumer<MapBinding> setter, Supplier<MapBinding> getter) {
+		return new AttrBindBuilder<MapBinding>(MapBinding.class).withName(name).withSet(setter).withGet(getter);
+	}
+
+	@SuppressWarnings("rawtypes")
+	public static AttrBindBuilder<MapBinding> xmap(String name, Consumer<MapBinding> setter) {
+		return new AttrBindBuilder<MapBinding>(MapBinding.class).withName(name).withSet(setter);
 	}
 
 	public static AttrBindBuilder<Integer> xinteger() {

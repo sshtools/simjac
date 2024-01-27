@@ -15,11 +15,8 @@
  */
 package com.sshtools.simjac.binding;
 
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+import com.sshtools.simjac.store.ConfigurationStoreBuilder.SerDeser;
 
-import javax.json.JsonValue;
-
-public interface Bindings extends Supplier<JsonValue>, Consumer<JsonValue> {
+public interface Bindings extends SerDeser {
 
 }

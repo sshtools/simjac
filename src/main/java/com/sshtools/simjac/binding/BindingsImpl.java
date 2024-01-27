@@ -112,7 +112,9 @@ public class BindingsImpl implements Bindings {
 			((AttrBinding<Boolean>) binding).setter().accept(true);
 
 		} else if (jsonValue.getValueType() == ValueType.NULL) {
-			if (((AttrBinding<Object>) binding).nullBlank()) {
+			if (((AttrBinding<Object>) binding).omitNull()) {
+				return;
+			} else if (((AttrBinding<Object>) binding).nullBlank()) {
 				var attrBinding = (AttrBinding<?>) binding;
 				if (attrBinding.type().equals(Double.class)) {
 					((Consumer<Double>) attrBinding.setter()).accept(0d);
@@ -183,36 +185,43 @@ public class BindingsImpl implements Bindings {
 			var bind = (AttrBinding<?>) b;
 			var type = bind.type();
 			var val = bind.getter().get();
-			if (type.equals(String.class)) {
-				if (val == null || val.equals("")) {
-					if (bind.nullBlank()) {
-						return Json.createValue((String) "");
-					} else {
-						return null;
-					}
+			if (val == null) {
+				if (bind.omitNull()) {
+					return null;
+				} else if (!bind.nullBlank()) {
+					return JsonValue.NULL;
+				}
+			}
+
+			if (bind.type().equals(ArrayBinding.class) || bind.type().equals(ObjectBinding.class)
+					|| bind.type().equals(MapBinding.class)) {
+				return serializeValue((Binding<?>) bind.getter().get());
+			} else if (type.equals(String.class)) {
+				if (val == null) {
+					return Json.createValue((String) "");
 				} else {
 					return Json.createValue((String) val);
 				}
 			} else if (bind.type().equals(Double.class)) {
-				return Json.createValue((Double) val);
+				return Json.createValue(val == null ? 0 : (Double) val);
 			} else if (bind.type().equals(Float.class)) {
-				return Json.createValue((Float) val);
+				return Json.createValue(val == null ? 0 : (Float) val);
 			} else if (bind.type().equals(BigInteger.class)) {
-				return Json.createValue((BigInteger) val);
+				return Json.createValue(val == null ? BigInteger.valueOf(0L) : (BigInteger) val);
 			} else if (bind.type().equals(BigDecimal.class)) {
-				return Json.createValue((BigDecimal) val);
+				return Json.createValue(val == null ? BigDecimal.valueOf(0d) : (BigDecimal) val);
 			} else if (bind.type().equals(Long.class)) {
-				return Json.createValue((Long) val);
+				return Json.createValue(val == null ? 0L : (Long) val);
 			} else if (bind.type().equals(Integer.class)) {
-				return Json.createValue((Integer) val);
+				return Json.createValue(val == null ? 0 : (Integer) val);
 			} else if (bind.type().equals(Short.class)) {
-				return Json.createValue((Short) val);
+				return Json.createValue(val == null ? 0 : (Short) val);
 			} else if (bind.type().equals(Character.class)) {
-				return Json.createValue((Character) val);
+				return Json.createValue(val == null ? 0 : (Character) val);
 			} else if (bind.type().equals(Byte.class)) {
-				return Json.createValue((Byte) val);
+				return Json.createValue(val == null ? 0 : (Byte) val);
 			} else if (bind.type().equals(Boolean.class)) {
-				return (Boolean) val ? JsonValue.TRUE : JsonValue.FALSE;
+				return val == null ? JsonValue.FALSE : ((Boolean) val ? JsonValue.TRUE : JsonValue.FALSE);
 			} else if (Enum.class.isAssignableFrom(bind.type())) {
 				return Json.createValue(((Enum<?>) val).name());
 			} else {
@@ -248,12 +257,20 @@ public class BindingsImpl implements Bindings {
 	private <K, V> void serializeMap(MapBinding<K, V> map, JsonObjectBuilder bldr) {
 		BiFunction<K, V, Binding<V>> bnd = map.binding();
 		for (var entry : map.getter().get().entrySet()) {
-			bldr.add(entry.getKey().toString(), serializeValue(bnd.apply(entry.getKey(), entry.getValue())));
+			var ser = serializeValue(bnd.apply(entry.getKey(), entry.getValue()));
+			if (ser != null) {
+				bldr.add(entry.getKey().toString(), ser);
+			}
 		}
 	}
 
 	private void serializeObject(ObjectBinding<?> object, JsonObjectBuilder bldr) {
-		object.bindings().forEach((k, v) -> bldr.add(k, serializeValue(v)));
+		object.bindings().forEach((k, v) -> {
+			var ser = serializeValue(v);
+			if (ser != null) {
+				bldr.add(k, ser);
+			}
+		});
 	}
 
 }

@@ -30,10 +30,12 @@ import java.util.function.Supplier;
 import javax.json.Json;
 import javax.json.JsonValue;
 import javax.json.stream.JsonGenerator;
+import javax.json.stream.JsonParsingException;
 
 public final class ConfigurationStoreImpl implements ConfigurationStore {
 	private final Path path;
 	private final boolean failOnMissingFile;
+	private final boolean failOnParsingError;
 	private final String name;
 	private final Optional<Supplier<JsonValue>> serializer;
 	private final Optional<Consumer<JsonValue>> deserializer;
@@ -47,6 +49,7 @@ public final class ConfigurationStoreImpl implements ConfigurationStore {
 
 		this.path = path;
 		this.failOnMissingFile = builder.isFailOnMissingFile();
+		this.failOnParsingError = builder.isFailOnParsingError();
 		this.name = builder.getName().orElseThrow(() -> new IllegalStateException("Name must be set."));
 		this.serializer = builder.getSerializer();
 		this.deserializer = builder.getDeserializer();
@@ -61,6 +64,10 @@ public final class ConfigurationStoreImpl implements ConfigurationStore {
 				try (var parser = Json.createReader(in)) {
 					deserializer.orElseThrow(() -> new IllegalStateException("Deserializer not configured."))
 							.accept(parser.readValue());
+				} catch (JsonParsingException jpe) {
+					if (failOnParsingError) {
+						throw jpe;
+					}
 				}
 			} catch (IOException ioe) {
 				throw new UncheckedIOException(ioe);
