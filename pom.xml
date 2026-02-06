@@ -28,7 +28,7 @@ specific language governing permissions and
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.sshtools</groupId>
 	<artifactId>simjac</artifactId>
-	<version>0.0.2-SNAPSHOT</version>
+	<version>0.0.2</version>
 	<name>Simple Json Configuration</name>
 	<properties>
 		<maven.compiler.target>11</maven.compiler.target>
@@ -64,16 +64,6 @@ specific language governing permissions and
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
-	<distributionManagement>
-		<snapshotRepository>
-			<id>ossrh-sshtools</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-		</snapshotRepository>
-		<repository>
-			<id>ossrh-sshtools</id>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-		</repository>
-	</distributionManagement>
 	<scm>
 		<url>https://github.com/sshtools/simjac</url>
 		<connection>scm:git:https://github.com/sshtools/simjac.git</connection>
@@ -93,6 +83,10 @@ specific language governing permissions and
 	</dependencies>
 	<build>
 		<plugins>
+		 	<plugin>
+          		<groupId>org.sonatype.central</groupId>
+          		<artifactId>central-publishing-maven-plugin</artifactId>
+        	</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>properties-maven-plugin</artifactId>
@@ -103,7 +97,7 @@ specific language governing permissions and
 							<goal>read-project-properties</goal>
 						</goals>
 						<configuration>
-							<quiet>false</quiet>
+							<quiet>true</quiet>
 							<files>
 								<file>${build.projectProperties}</file>
 								<file>${build.userProperties}</file>
@@ -234,17 +228,17 @@ specific language governing permissions and
 						</execution>
 					</executions>
 				</plugin>
-				<plugin>
-					<groupId>org.sonatype.plugins</groupId>
-					<artifactId>nexus-staging-maven-plugin</artifactId>
-					<version>1.6.13</version>
-					<extensions>true</extensions>
-					<configuration>
-						<serverId>ossrh-sshtools</serverId>
-						<nexusUrl>https://oss.sonatype.org/</nexusUrl>
-						<autoReleaseAfterClose>true</autoReleaseAfterClose>
-					</configuration>
-				</plugin>
+			 	<plugin>
+	          		<groupId>org.sonatype.central</groupId>
+	          		<artifactId>central-publishing-maven-plugin</artifactId>
+	          		<version>0.8.0</version>
+	          		<extensions>true</extensions>
+	          		<configuration>
+	          		    <autoPublish>true</autoPublish>
+	          		    <waitUntil>published</waitUntil>
+	            		<publishingServerId>central-sshtools</publishingServerId>
+	          		</configuration>
+	        	</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-pmd-plugin</artifactId>
@@ -364,10 +358,6 @@ specific language governing permissions and
 								</goals>
 							</execution>
 						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.sonatype.plugins</groupId>
-						<artifactId>nexus-staging-maven-plugin</artifactId>
 					</plugin>
 				</plugins>
 			</build>
